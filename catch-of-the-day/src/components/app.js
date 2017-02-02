@@ -3,18 +3,20 @@ import Header from './Header';
 import Order from './Order';
 import Inventory from './Inventory';
 import Fish from './Fish';
-import sampleFishes from '../sample-fishes'
+import sampleFishes from '../sample-fishes';
 import base from '../base';
 
 class App extends React.Component {
   constructor() {
     super();
+
     this.addFish = this.addFish.bind(this);
-    this.updateFish = this.updateFish.bind(this);
     this.removeFish = this.removeFish.bind(this);
+    this.updateFish = this.updateFish.bind(this);
     this.loadSamples = this.loadSamples.bind(this);
     this.addToOrder = this.addToOrder.bind(this);
     this.removeFromOrder = this.removeFromOrder.bind(this);
+
     // getinitialState
     this.state = {
       fishes: {},
@@ -23,18 +25,22 @@ class App extends React.Component {
   }
 
   componentWillMount() {
-    this.ref = base.syncState(`${this.props.params.storeId}/fishes`,{
+    // this runs right before the <App> is rendered
+    this.ref = base.syncState(`${this.props.params.storeId}/fishes`, {
       context: this,
       state: 'fishes'
     });
 
+    // check if there is any order in localStorage
     const localStorageRef = localStorage.getItem(`order-${this.props.params.storeId}`);
 
-    if (localStorageRef) {
+    if(localStorageRef) {
+      // update our App component's order state
       this.setState({
         order: JSON.parse(localStorageRef)
       });
     }
+
   }
 
   componentWillUnmount() {
@@ -57,17 +63,17 @@ class App extends React.Component {
 
   updateFish(key, updatedFish) {
     const fishes = {...this.state.fishes};
-    fishes[key] = updatedFish
-    this.setState({fishes});
+    fishes[key] = updatedFish;
+    this.setState({ fishes });
   }
 
-  removeFish(key, updatedFish) {
+  removeFish(key) {
     const fishes = {...this.state.fishes};
     fishes[key] = null;
-    this.setState({fishes})
+    this.setState({ fishes });
   }
 
-  loadSamples(){
+  loadSamples() {
     this.setState({
       fishes: sampleFishes
     });
@@ -85,7 +91,7 @@ class App extends React.Component {
   removeFromOrder(key) {
     const order = {...this.state.order};
     delete order[key];
-    this.setState({order})
+    this.setState({ order });
   }
 
   render() {
@@ -96,8 +102,8 @@ class App extends React.Component {
           <ul className="list-of-fishes">
             {
               Object
-              .keys(this.state.fishes)
-              .map(key => <Fish key={key} index={key} details={this.state.fishes[key]} addToOrder={this.addToOrder}/>)
+                .keys(this.state.fishes)
+                .map(key => <Fish key={key} index={key} details={this.state.fishes[key]} addToOrder={this.addToOrder}/>)
             }
           </ul>
         </div>
@@ -107,17 +113,21 @@ class App extends React.Component {
           params={this.props.params}
           removeFromOrder={this.removeFromOrder}
         />
-      <Inventory
-        addFish={this.addFish}
-        loadSamples={this.loadSamples}
-        fishes={this.state.fishes}
-        updateFish={this.updateFish}
-        removeFish={this.removeFish}
-        removeFromOrder={this.removeFromOrder}
-      />
+        <Inventory
+          addFish={this.addFish}
+          removeFish={this.removeFish}
+          loadSamples={this.loadSamples}
+          fishes={this.state.fishes}
+          updateFish={this.updateFish}
+          storeId={this.props.params.storeId}
+        />
       </div>
     )
   }
+}
+
+App.propTypes = {
+  params: React.PropTypes.object.isRequired
 }
 
 export default App;
